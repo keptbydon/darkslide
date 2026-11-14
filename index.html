@@ -31,7 +31,7 @@
   /* ---------- top bar (shared) ---------- */
   .bar{position:fixed;inset:0 0 auto 0;z-index:30;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
        padding:22px clamp(20px,3.2vw,44px);font-size:13px;font-weight:300;letter-spacing:.06em;
-       transition:opacity .5s var(--ease)}
+       background:linear-gradient(to bottom,rgba(0,0,0,.82),rgba(0,0,0,0));transition:opacity .5s var(--ease)}
   .bar .l{justify-self:start} .bar .c{justify-self:center;color:var(--dim)} .bar .r{justify-self:end}
   .bar a,.bar button{opacity:.9;transition:opacity .2s}
   .bar a:hover,.bar button:hover{opacity:1}
@@ -105,6 +105,26 @@
   .count{position:fixed;right:clamp(20px,3.2vw,44px);bottom:26px;z-index:25;font-size:12px;font-weight:300;letter-spacing:.06em;color:var(--dim);
          font-variant-numeric:tabular-nums;transition:opacity .4s}
 
+  /* ---------- bar switch ---------- */
+  .switch{display:flex;gap:22px}
+  .switch a{color:var(--dim);opacity:1!important;transition:color .2s}
+  .switch a:hover,.switch a.on{color:var(--white)}
+
+  /* ---------- all photographs (wall) ---------- */
+  .wall-wrap{padding:120px clamp(20px,3.2vw,44px) 140px}
+  .wall-h{font-family:var(--display);font-weight:400;font-size:clamp(56px,9vw,140px);letter-spacing:-.01em;line-height:1;margin-bottom:clamp(48px,9vh,110px)}
+  .wall-h small{display:block;margin-top:16px;font-family:var(--sans);font-weight:200;font-size:14px;letter-spacing:.06em;color:var(--dim)}
+  .wall{display:grid;grid-template-columns:repeat(12,1fr);column-gap:clamp(16px,2.4vw,36px);row-gap:clamp(56px,10vh,120px);align-items:start}
+  .tile{grid-column:var(--c);margin-top:var(--mt,0);display:block;position:relative}
+  .tile img{width:100%;height:auto;filter:grayscale(1) brightness(.62) contrast(1.05);transition:filter .7s var(--ease),transform .9s var(--ease)}
+  .tile:hover img,.tile:focus-visible img,.tile.lit img{filter:none}
+  .tile:hover img{transform:scale(1.012)}
+  .tile .tc{display:flex;justify-content:space-between;gap:16px;margin-top:12px;font-size:12px;font-weight:300;letter-spacing:.06em;color:var(--dim);
+            opacity:0;transform:translateY(-4px);transition:opacity .5s var(--ease),transform .5s var(--ease)}
+  .tile:hover .tc,.tile:focus-visible .tc,.tile.lit .tc{opacity:1;transform:none}
+  .tile .tc b{font-family:var(--display);font-weight:400;font-size:17px;letter-spacing:.01em;color:var(--white)}
+  .tile:focus-visible{outline:none}
+
   @media (hover:none),(max-width:720px){
     .list .head,.row{grid-template-columns:1fr 64px 56px}
     .row{grid-template-columns:1fr 56px 64px;padding:6px 0}
@@ -117,6 +137,11 @@
     .plate .meta{text-align:left}
     .count{bottom:auto;top:24px;right:auto;left:50%;transform:translateX(-50%)}
     .bar .c{visibility:hidden}
+    .bar .c.switch{visibility:visible;gap:16px}
+    .wall-wrap{padding-top:96px}
+    .wall{row-gap:56px}
+    .tile{grid-column:var(--cm)}
+    .tile{margin-top:0}
   }
   @media (prefers-reduced-motion:reduce){
     *{transition:none!important;animation:none!important}
@@ -176,7 +201,7 @@ let firstLoad = true, cleanup = () => {};
 /* ---------- index ---------- */
 function renderIndex(){
   bar.innerHTML = `<a class="l name" href="#">${esc(SITE.name)}</a>
-                   <span class="c">${total} photographs</span>
+                   ${switcher("index")}
                    <button class="r" id="about-open">About</button>`;
   $("#about-open").onclick = openAbout;
   count.hidden = true;
@@ -209,8 +234,47 @@ function renderIndex(){
   cleanup = () => {};
 }
 
+function switcher(on){
+  return `<nav class="c switch" aria-label="View"><a href="#" class="${on==='index'?'on':''}">Series</a><a href="#all" class="${on==='all'?'on':''}">All ${total}</a></nav>`;
+}
+
+/* ---------- all photographs ---------- */
+const SPOTS = [
+  {c:"1 / span 5",  mt:"0",     cm:"1 / span 10"},
+  {c:"7 / span 4",  mt:"16vh",  cm:"3 / span 10"},
+  {c:"3 / span 4",  mt:"2vh",   cm:"1 / span 9"},
+  {c:"8 / span 5",  mt:"-6vh",  cm:"4 / span 9"},
+  {c:"2 / span 6",  mt:"8vh",   cm:"1 / span 11"},
+  {c:"9 / span 3",  mt:"20vh",  cm:"5 / span 8"}
+];
+function renderAll(){
+  bar.innerHTML = `<a class="l name" href="#">${esc(SITE.name)}</a>
+                   ${switcher("all")}
+                   <button class="r" id="about-open">About</button>`;
+  $("#about-open").onclick = openAbout;
+  const all = [];
+  SERIES.forEach(s=>s.photos.forEach((p,i)=>all.push({s,p,i})));
+  app.innerHTML = `
+    <section class="wall-wrap">
+      <h1 class="wall-h">All photographs<small>${total} photographs from ${SERIES.length} series</small></h1>
+      <div class="wall">
+        ${all.map((x,k)=>{ const sp = SPOTS[k%SPOTS.length]; return `
+          <a class="tile" href="#${x.s.id}-${x.i+1}" style="--c:${sp.c};--mt:${sp.mt};--cm:${sp.cm}">
+            <img src="${x.p.src}" alt="${esc(x.p.caption || x.s.title)}" loading="${k<4?'eager':'lazy'}">
+            <span class="tc"><b>${esc(x.s.title)}</b><span>${esc(x.s.year)}</span></span>
+          </a>`;}).join("")}
+      </div>
+    </section>`;
+  let io = null;
+  if (matchMedia("(hover:none)").matches && "IntersectionObserver" in window){
+    io = new IntersectionObserver(es=>es.forEach(e=>e.target.classList.toggle("lit",e.isIntersecting)),{rootMargin:"-38% 0px -38% 0px"});
+    document.querySelectorAll(".tile").forEach(t=>io.observe(t));
+  }
+  cleanup = () => { if(io) io.disconnect(); };
+}
+
 /* ---------- series ---------- */
-function renderSeries(s){
+function renderSeries(s, startAt){
   const idx = SERIES.indexOf(s), next = SERIES[(idx+1)%SERIES.length];
   bar.innerHTML = `<a class="l" href="#">Index</a>
                    <span class="c">${esc(s.title)}, ${esc(s.year)}</span>
@@ -271,6 +335,7 @@ function renderSeries(s){
   };
   document.addEventListener("keydown",onKey);
   reel.focus({preventScroll:true});
+  if (startAt && frames[startAt]) { reel.style.scrollBehavior='auto'; reel.scrollTop = frames[startAt].offsetTop; reel.style.scrollBehavior=''; }
   cleanup = () => { document.removeEventListener("keydown",onKey); io.disconnect(); count.hidden = true; document.body.classList.remove("quiet"); };
 }
 
@@ -286,8 +351,12 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeAbout(); });
 /* ---------- routing ---------- */
 function route(){
   cleanup(); closeAbout();
-  const s = SERIES.find(x=>x.id===location.hash.slice(1));
-  s ? renderSeries(s) : renderIndex();
+  const h = location.hash.slice(1);
+  let s = SERIES.find(x=>x.id===h), start = 0;
+  if (!s){ const m = h.match(/^(.*)-(\d+)$/); if (m){ s = SERIES.find(x=>x.id===m[1]); start = +m[2]; } }
+  if (s) renderSeries(s, start);
+  else if (h==="all") renderAll();
+  else renderIndex();
   if (location.hash.slice(1)==="about") openAbout();
   firstLoad = false;
   window.scrollTo(0,0);
