@@ -154,7 +154,9 @@ const SERIES = [
     cover: "img/france-1.jpg",
     photos: [
       { src: "img/france-1.jpg", caption: "", camera: "Canon EOS 10D" },
-      { src: "img/france-2.jpg", caption: "", camera: "Canon EOS 10D" }
+      { src: "img/france-2.jpg", caption: "", camera: "Canon EOS 10D" },
+      { src: "img/france-3.jpg", caption: "", camera: "35mm film" },
+      { src: "img/france-4.jpg", caption: "", camera: "35mm film" }
     ]
   },
   {
@@ -163,6 +165,16 @@ const SERIES = [
     photos: [
       { src: "img/praha-2.jpg", caption: "", camera: "Canon EOS 10D" },
       { src: "img/praha-1.jpg", caption: "", camera: "Samsung VLUU NV11" }
+    ]
+  },
+  {
+    id: "florence", title: "Florence", year: "", intro: "",
+    cover: "img/florence-1.jpg",
+    photos: [
+      { src: "img/florence-1.jpg", caption: "", camera: "Canon EOS 10D" },
+      { src: "img/florence-2.jpg", caption: "", camera: "Canon EOS 10D" },
+      { src: "img/florence-3.jpg", caption: "", camera: "Canon EOS 10D" },
+      { src: "img/florence-4.jpg", caption: "", camera: "Canon EOS 10D" }
     ]
   }
 ];
@@ -173,6 +185,7 @@ const app = $("#app"), bar = $("#bar"), count = $("#count");
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const ALL = []; SERIES.forEach(s=>s.photos.forEach((p,i)=>ALL.push({s,p,i})));
 let cleanup = () => {};
+const label = s => esc(s.title) + (s.year ? ", " + esc(s.year) : "");
 
 function setNav(on, fade){
   bar.querySelectorAll("[data-nav]").forEach(a=>a.classList.toggle("on", a.dataset.nav===on));
@@ -186,8 +199,8 @@ function renderHome(){
   const x = ALL[Math.floor(Math.random()*ALL.length)];
   app.innerHTML = `
     <section class="home">
-      <a class="print" href="#${x.s.id}-${x.i+1}" aria-label="${esc(x.s.title)}, ${esc(x.s.year)}"><img src="${x.p.src}" alt="${esc(x.p.caption || x.s.title)}"></a>
-      <div class="cap">${esc(x.s.title)}, ${esc(x.s.year)}</div>
+      <a class="print" href="#${x.s.id}-${x.i+1}" aria-label="${label(x.s)}"><img src="${x.p.src}" alt="${esc(x.p.caption || x.s.title)}"></a>
+      <div class="cap">${label(x.s)}</div>
     </section>`;
   const img = app.querySelector(".home img");
   whenLoaded(img, ()=>{ img.classList.add("ready"); app.querySelector(".home .cap").classList.add("on"); });
@@ -227,7 +240,7 @@ function renderAll(){
     ${ALL.map((x,k)=>{ const sp = SPOTS[k%SPOTS.length]; return `
       <a class="tile" href="#${x.s.id}-${x.i+1}" style="--c:${sp.c};--mt:${sp.mt};--cm:${sp.cm}">
         <img src="${x.p.src}" alt="${esc(x.p.caption || x.s.title)}" loading="${k<4?'eager':'lazy'}">
-        <span class="tc">${esc(x.s.title)}, ${esc(x.s.year)}</span>
+        <span class="tc">${label(x.s)}</span>
       </a>`;}).join("")}
   </section>`;
   let io = null;
@@ -246,7 +259,7 @@ function renderSeries(s, startAt){
     <div class="reel" id="reel" tabindex="-1">
       <section class="frame title" data-k="0">
         <h1>${esc(s.title)}</h1>
-        <div class="yr">${esc(s.year)}</div>
+        ${s.year ? `<div class="yr">${esc(s.year)}</div>` : ""}
         ${s.intro ? `<p class="intro">${esc(s.intro)}</p>` : ""}
       </section>
       ${s.photos.map((p,i)=>`
@@ -255,7 +268,7 @@ function renderSeries(s, startAt){
           <img src="${p.src}" alt="${esc(p.caption || s.title + ' ' + (i+1))}" ${i<2?'':'loading="lazy"'}>
           <figcaption>
             <div class="cap">${esc(p.caption)}</div>
-            <div class="meta">${esc(s.title)}, ${esc(s.year)}${p.camera?`<br>${esc(p.camera)}`:""}</div>
+            <div class="meta">${label(s)}${p.camera?`<br>${esc(p.camera)}`:""}</div>
           </figcaption>
         </figure>
       </section>`).join("")}
