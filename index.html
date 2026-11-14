@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Don — Photographs</title>
 <style>
   @font-face{font-family:"Italiana";src:url(fonts/italiana-latin-400-normal.woff2) format("woff2");font-weight:400;font-display:swap}
@@ -103,13 +103,36 @@
 
   @media (hover:none),(max-width:720px){
     .bar nav{gap:18px}
-    .home img{max-width:100%;max-height:58svh}
     .peek{display:none}
     .slist:hover .srow{color:var(--white)}
+  }
+  @media (max-width:720px){
+    .home img{max-width:100%;max-height:58svh}
     .plate figcaption{grid-template-columns:1fr;gap:6px}
     .plate .meta{text-align:left}
     .wall{row-gap:56px}
     .tile{grid-column:var(--cm);margin-top:0}
+  }
+  /* phone turned sideways: give the photograph the whole height */
+  @media (orientation:landscape) and (max-height:520px){
+    .bar{padding:12px max(20px,env(safe-area-inset-right)) 12px max(20px,env(safe-area-inset-left))}
+    .home{padding:48px 20px;min-height:0}
+    .home img{max-width:100%;max-height:calc(100svh - 96px)}
+    .home .cap{bottom:12px}
+    .frame{padding:8px 20px}
+    .frame.title{padding-bottom:28px}
+    .frame.title h1{font-size:min(19vw,62svh)}
+    .plate img{max-height:calc(100svh - 16px)}
+    .plate figcaption{position:absolute;right:max(20px,env(safe-area-inset-right));bottom:12px;margin:0;display:block;min-height:0;
+                      width:max(110px,calc((100vw - 100svh * 1.6) / 2 - 32px));text-align:right}
+    .plate .cap{font-size:15px;line-height:1.4;margin-bottom:6px}
+    .plate .meta{text-align:right;white-space:normal}
+    body.onphoto:not(.showbar) .bar{opacity:0;pointer-events:none}
+    .count{left:max(20px,env(safe-area-inset-left));right:auto;bottom:12px;top:auto;transform:none}
+    .slist{padding:64px 20px 24px}
+    .srow .t{font-size:min(8.5vw,17svh)}
+    .wall{padding-top:72px;row-gap:64px}
+    .tile{grid-column:var(--c);margin-top:calc(var(--mt,0) * .6)}
   }
   @media (prefers-reduced-motion:reduce){
     *{transition:none!important;animation:none!important}
@@ -185,6 +208,7 @@ const app = $("#app"), bar = $("#bar"), count = $("#count");
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const ALL = []; SERIES.forEach(s=>s.photos.forEach((p,i)=>ALL.push({s,p,i})));
 let cleanup = () => {};
+const LANDSCAPE = matchMedia("(orientation:landscape) and (max-height:520px)");
 const label = s => esc(s.title) + (s.year ? ", " + esc(s.year) : "");
 
 function setNav(on, fade){
@@ -281,13 +305,16 @@ function renderSeries(s, startAt){
   const frames = [...reel.querySelectorAll(".frame")];
   reel.querySelectorAll(".plate img").forEach(im=>{
     whenLoaded(im, ()=>im.classList.add("ready"));
-    im.addEventListener("click",()=>document.body.classList.toggle("quiet"));
+    im.addEventListener("click",()=>document.body.classList.toggle(LANDSCAPE.matches ? "showbar" : "quiet"));
   });
   const n = s.photos.length;
   const io = new IntersectionObserver(es=>es.forEach(e=>{
     if(!e.isIntersecting) return;
     const k = e.target.dataset.k;
-    if (k==="0" || k==="end"){ count.hidden = true; document.body.classList.remove("quiet"); }
+    const onPhoto = !(k==="0" || k==="end");
+    document.body.classList.toggle("onphoto", onPhoto);
+    document.body.classList.remove("showbar");
+    if (!onPhoto){ count.hidden = true; document.body.classList.remove("quiet"); }
     else { count.hidden = false; count.textContent = `${k} / ${n}`; }
   }),{root:reel,threshold:.6});
   frames.forEach(f=>io.observe(f));
@@ -303,7 +330,7 @@ function renderSeries(s, startAt){
   document.addEventListener("keydown",onKey);
   reel.focus({preventScroll:true});
   if (startAt && frames[startAt]){ reel.style.scrollBehavior="auto"; reel.scrollTop = frames[startAt].offsetTop; reel.style.scrollBehavior=""; }
-  cleanup = () => { document.removeEventListener("keydown",onKey); io.disconnect(); count.hidden = true; document.body.classList.remove("quiet"); };
+  cleanup = () => { document.removeEventListener("keydown",onKey); io.disconnect(); count.hidden = true; document.body.classList.remove("quiet","onphoto","showbar"); };
 }
 
 /* ---------- about ---------- */
