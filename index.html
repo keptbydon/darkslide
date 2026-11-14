@@ -41,7 +41,7 @@
   /* ---------- home ---------- */
   .home{height:100svh;min-height:480px;display:flex;align-items:center;justify-content:center;padding:96px clamp(20px,3.2vw,44px)}
   .home a.print{display:block}
-  .home img{max-width:min(62vw,1000px);max-height:62svh;width:auto;height:auto;opacity:0}
+  .home img{max-width:min(78vw,1400px);max-height:74svh;width:auto;height:auto;opacity:0}
   .home img.ready{animation:develop 2.4s var(--ease) both}
   @keyframes develop{0%{opacity:0;filter:brightness(2) contrast(.6) blur(5px)}100%{opacity:1;filter:none}}
   .home .cap{position:fixed;right:clamp(20px,3.2vw,44px);bottom:24px;font-size:12px;font-weight:300;letter-spacing:.06em;color:var(--dim);
@@ -217,10 +217,25 @@ function setNav(on, fade){
 }
 function whenLoaded(img, fn){ img.complete && img.naturalWidth ? fn() : img.addEventListener("load", fn, {once:true}); }
 
-/* ---------- home: one photograph ---------- */
+/* ---------- home: one photograph ----------
+   Each visit takes the next card from a shuffled deck of every photograph,
+   so all of them come round before any repeats. */
+function nextHomePhoto(){
+  const n = ALL.length, key = "darkslide-deck";
+  let deck = [], last = -1;
+  try { const v = JSON.parse(localStorage.getItem(key) || "{}"); deck = (v.deck||[]).filter(i=>i<n); last = v.last ?? -1; if (v.n !== n) deck = []; } catch(e) {}
+  if (!deck.length){
+    deck = [...Array(n).keys()];
+    for (let i=n-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; }
+    if (n>1 && deck[deck.length-1]===last) [deck[0],deck[deck.length-1]]=[deck[deck.length-1],deck[0]];
+  }
+  const pick = deck.pop();
+  try { localStorage.setItem(key, JSON.stringify({deck, last:pick, n})); } catch(e) {}
+  return pick;
+}
 function renderHome(){
   setNav(null);
-  const x = ALL[Math.floor(Math.random()*ALL.length)];
+  const x = ALL[nextHomePhoto()];
   app.innerHTML = `
     <section class="home">
       <a class="print" href="#${x.s.id}-${x.i+1}" aria-label="${label(x.s)}"><img src="${x.p.src}" alt="${esc(x.p.caption || x.s.title)}"></a>
