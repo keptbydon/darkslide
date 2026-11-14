@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Don — Photographs</title>
+<meta name="description" content="Photographs by Don. Places and years, kept one series at a time.">
+<meta name="theme-color" content="#000000">
+<meta property="og:title" content="Don — Photographs">
+<meta property="og:description" content="Places and years, kept one series at a time.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://keptbydon.github.io/darkslide/img/london-1.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23000'/%3E%3Crect x='7' y='10' width='18' height='12' fill='none' stroke='%23f2f1ee' stroke-width='1.2'/%3E%3C/svg%3E">
 <style>
   @font-face{font-family:"Italiana";src:url(fonts/italiana-latin-400-normal.woff2) format("woff2");font-weight:400;font-display:swap}
   @font-face{font-family:"Jost";src:url(fonts/jost-latin-200-normal.woff2) format("woff2");font-weight:200;font-display:swap}
@@ -27,6 +34,8 @@
   button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   :focus-visible{outline:1px solid var(--white);outline-offset:4px}
   img{display:block}
+  #app.enter{animation:viewin .7s var(--ease) both}
+  @keyframes viewin{from{opacity:0}to{opacity:1}}
 
   /* ---------- bar ---------- */
   .bar{position:fixed;inset:0 0 auto 0;z-index:30;display:flex;justify-content:space-between;align-items:center;
@@ -48,24 +57,30 @@
              opacity:0;transition:opacity 1s var(--ease) 1.2s}
   .home .cap.on{opacity:1}
 
-  /* ---------- series list ---------- */
-  .slist{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding:120px clamp(20px,3.2vw,44px) clamp(40px,8vh,90px)}
-  .srow{display:flex;align-items:baseline;gap:18px;width:max-content;transition:color .4s var(--ease)}
-  .srow .t{font-family:var(--display);font-size:clamp(52px,8.5vw,140px);line-height:1.08;letter-spacing:-.005em}
-  .srow .y{font-size:13px;font-weight:200;letter-spacing:.06em;color:var(--dim);font-variant-numeric:tabular-nums}
+  /* ---------- series list: an index; the cover follows the pointer ---------- */
+  .slist{position:relative;z-index:1;min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;
+         padding:104px clamp(20px,3.2vw,44px) clamp(32px,6vh,72px)}
+  .srow{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:24px;transition:color .4s var(--ease)}
+  .srow .t{font-family:var(--display);font-size:clamp(34px,min(5.4vw,7.4svh),96px);line-height:1.13;letter-spacing:-.005em;transition:transform .6s var(--ease)}
+  .srow .m{display:flex;gap:28px;font-size:13px;font-weight:200;letter-spacing:.06em;color:var(--dim);font-variant-numeric:tabular-nums;transition:color .4s var(--ease)}
+  .srow .m .y{min-width:4ch;text-align:right}
   .slist:hover .srow{color:var(--faint)}
+  .slist:hover .srow .m{color:var(--faint)}
   .slist .srow:hover,.slist .srow:focus-visible{color:var(--white);outline:none}
-  .peek{position:fixed;right:clamp(20px,3.2vw,44px);top:50%;width:min(30vw,460px);transform:translateY(-50%);pointer-events:none}
-  .peek img{position:absolute;top:0;right:0;width:100%;height:auto;opacity:0;transform:translateY(-50%);transition:opacity .6s var(--ease)}
-  .peek img.on{opacity:1}
+  .slist .srow:hover .m,.slist .srow:focus-visible .m{color:var(--white)}
+  .slist .srow:hover .t,.slist .srow:focus-visible .t{transform:translateX(.12em)}
+  .peek{position:fixed;left:0;top:0;z-index:0;width:min(27vw,420px);pointer-events:none;will-change:transform}
+  .peek img{position:absolute;left:0;top:0;max-width:100%;max-height:54vh;width:auto;height:auto;opacity:0;
+            transform:translateY(-50%) scale(.97);transition:opacity .5s var(--ease),transform .9s var(--ease)}
+  .peek img.on{opacity:.92;transform:translateY(-50%)}
 
   /* ---------- about ---------- */
-  .about{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.96);display:flex;align-items:center;justify-content:center;
+  .about{position:fixed;inset:0;z-index:40;background:#000;display:flex;align-items:center;justify-content:center;
          padding:40px clamp(20px,6vw,80px);opacity:0;pointer-events:none;transition:opacity .45s var(--ease)}
   .about.open{opacity:1;pointer-events:auto}
   .about .inner{max-width:30em}
   .about p{font-family:var(--display);font-size:clamp(24px,2.8vw,36px);line-height:1.45;letter-spacing:.005em}
-  .about .sig{margin-top:28px;font-size:13px;font-weight:300;letter-spacing:.06em;color:var(--dim)}
+  .about .sig{margin-top:28px;line-height:1.9;font-size:13px;font-weight:300;letter-spacing:.06em;color:var(--dim)}
   .about .x{position:absolute;top:24px;right:clamp(20px,3.2vw,44px);font-size:13px;font-weight:300;letter-spacing:.06em;color:var(--dim)}
   .about .x:hover{color:var(--white)}
 
@@ -77,18 +92,24 @@
   .frame.title{align-items:flex-start;justify-content:flex-end;padding-bottom:clamp(40px,8vh,96px)}
   .frame.title h1{font-family:var(--display);font-weight:400;font-size:clamp(84px,19vw,320px);letter-spacing:-.015em;line-height:.9;margin-left:-.03em}
   .frame.title .yr{margin-top:22px;font-size:13px;font-weight:200;letter-spacing:.06em;color:var(--dim)}
+  .strip{position:absolute;right:clamp(20px,3.2vw,44px);bottom:clamp(40px,8vh,96px);display:flex;gap:8px;max-width:46vw;overflow-x:auto;scrollbar-width:none}
+  .strip::-webkit-scrollbar{display:none}
+  .strip button{flex:none;opacity:.5;transition:opacity .35s var(--ease)}
+  .strip button:hover,.strip button:focus-visible{opacity:1}
+  .strip img{height:58px;width:auto}
   .frame.title .intro{margin-top:26px;max-width:32em;font-weight:200;font-size:clamp(17px,1.6vw,20px);line-height:1.7;color:#d9d8d4}
   .plate{display:flex;flex-direction:column;align-items:center;max-width:100%;max-height:100%}
-  .plate img{max-width:100%;max-height:calc(100svh - 80px - 28px - 84px);width:auto;height:auto;cursor:pointer;opacity:0;transition:opacity 1.2s var(--ease)}
-  .plate img.ready{opacity:1}
+  .plate img{max-width:100%;max-height:calc(100svh - 80px - 28px - 84px);width:auto;height:auto;cursor:pointer;opacity:0;transform:scale(.985);transition:opacity 1.1s var(--ease),transform 1.6s var(--ease)}
+  .frame.in .plate img.ready{opacity:1;transform:none}
   .plate figcaption{align-self:stretch;margin-top:18px;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:start;min-height:64px;transition:opacity .5s var(--ease)}
   .plate .cap{font-family:var(--display);font-size:clamp(18px,1.5vw,22px);line-height:1.5;color:#e4e3df;max-width:34em}
   .plate .meta{font-size:12px;font-weight:300;letter-spacing:.05em;color:var(--dim);text-align:right;line-height:1.6;white-space:nowrap}
   body.quiet .plate figcaption{opacity:0}
   .frame.end{gap:26px}
   .frame.end .lbl{font-size:12px;font-weight:300;letter-spacing:.06em;color:var(--dim)}
-  .frame.end a.next{font-family:var(--display);font-size:clamp(60px,11vw,180px);line-height:1}
-  .frame.end a.next:hover{opacity:.7}
+  .frame.end a.next{display:flex;flex-direction:column;align-items:center;gap:22px;font-family:var(--display);font-size:clamp(60px,11vw,180px);line-height:1}
+  .frame.end a.next img{height:22svh;width:auto;filter:grayscale(1) brightness(.7);transition:filter .7s var(--ease)}
+  .frame.end a.next:hover img{filter:none}
   .count{position:fixed;right:clamp(20px,3.2vw,44px);bottom:24px;z-index:25;font-size:12px;font-weight:300;letter-spacing:.06em;color:var(--dim);font-variant-numeric:tabular-nums}
 
   /* ---------- all: contact sheet ----------
@@ -109,12 +130,16 @@
   @media (hover:none),(max-width:720px){
     .bar nav{gap:18px}
     .peek{display:none}
-    .slist:hover .srow{color:var(--white)}
+    .slist:hover .srow,.slist:hover .srow .m{color:inherit}
+    .slist:hover .srow .m{color:var(--dim)}
+    .srow .m .n{display:none}
   }
   @media (max-width:720px){
     .home img{max-width:100%;max-height:58svh}
     .plate figcaption{grid-template-columns:1fr;gap:6px}
     .plate .meta{text-align:left}
+    .strip{position:static;max-width:100%;margin-top:28px}
+    .strip img{height:48px}
     .wall{grid-template-columns:repeat(2,1fr);column-gap:20px;row-gap:36px;padding-top:110px}
   }
   /* phone turned sideways: give the photograph the whole height */
@@ -126,6 +151,9 @@
     .frame{padding:8px 20px}
     .frame.title{padding-bottom:28px}
     .frame.title h1{font-size:min(19vw,62svh)}
+    .strip{position:absolute;bottom:28px;margin:0;max-width:40vw}
+    .strip img{height:38px}
+    .frame.end a.next img{display:none}
     .plate img{max-height:calc(100svh - 16px)}
     .plate figcaption{position:absolute;right:max(20px,env(safe-area-inset-right));bottom:12px;margin:0;display:block;min-height:0;
                       width:max(110px,calc((100vw - 100svh * 1.6) / 2 - 32px));text-align:right}
@@ -134,7 +162,7 @@
     body.onphoto:not(.showbar) .bar{opacity:0;pointer-events:none}
     .count{left:max(20px,env(safe-area-inset-left));right:auto;bottom:12px;top:auto;transform:none}
     .slist{padding:64px 20px 24px}
-    .srow .t{font-size:min(8.5vw,17svh)}
+    .srow .t{font-size:min(5.4vw,15svh)}
     .wall{grid-template-columns:repeat(4,1fr);padding:72px 40px 80px;column-gap:32px;row-gap:40px}
   }
   @media (prefers-reduced-motion:reduce){
@@ -179,88 +207,90 @@ const SERIES = [
     id: "france-2006", title: "France", year: "2006", intro: "",
     cover: "img/france-1.jpg",
     photos: [
-      { src: "img/france-1.jpg", caption: "", camera: "Canon EOS 10D" },
-      { src: "img/france-2.jpg", caption: "", camera: "Canon EOS 10D" },
-      { src: "img/france-3.jpg", caption: "", camera: "35mm film" },
-      { src: "img/france-4.jpg", caption: "", camera: "35mm film" }
+      { src: "img/france-1.jpg", w: 2000, h: 1333, caption: "", camera: "Canon EOS 10D" },
+      { src: "img/france-2.jpg", w: 1536, h: 1024, caption: "", camera: "Canon EOS 10D" },
+      { src: "img/france-3.jpg", w: 1700, h: 1110, caption: "", camera: "35mm film" },
+      { src: "img/france-4.jpg", w: 1700, h: 1110, caption: "", camera: "35mm film" }
     ]
   },
   {
     id: "praha-2007", title: "Praha", year: "2007", intro: "",
     cover: "img/praha-2.jpg",
     photos: [
-      { src: "img/praha-2.jpg", caption: "", camera: "Canon EOS 10D" },
-      { src: "img/praha-1.jpg", caption: "", camera: "Samsung VLUU NV11" }
+      { src: "img/praha-2.jpg", w: 1982, h: 1288, caption: "", camera: "Canon EOS 10D" },
+      { src: "img/praha-1.jpg", w: 1024, h: 768, caption: "", camera: "Samsung VLUU NV11" }
     ]
   },
   {
     id: "florence", title: "Florence", year: "", intro: "",
     cover: "img/florence-1.jpg",
     photos: [
-      { src: "img/florence-1.jpg", caption: "", camera: "Canon EOS 10D" },
-      { src: "img/florence-2.jpg", caption: "", camera: "Canon EOS 10D" },
-      { src: "img/florence-3.jpg", caption: "", camera: "Canon EOS 10D" },
-      { src: "img/florence-4.jpg", caption: "", camera: "Canon EOS 10D" }
+      { src: "img/florence-1.jpg", w: 1657, h: 1110, caption: "", camera: "Canon EOS 10D" },
+      { src: "img/florence-2.jpg", w: 1333, h: 2000, caption: "", camera: "Canon EOS 10D" },
+      { src: "img/florence-3.jpg", w: 1333, h: 2000, caption: "", camera: "Canon EOS 10D" },
+      { src: "img/florence-4.jpg", w: 1333, h: 2000, caption: "", camera: "Canon EOS 10D" }
     ]
   },
   {
     id: "london-2025", title: "London", year: "2025", intro: "",
     cover: "img/london-1.jpg",
     photos: [
-      { src: "img/london-1.jpg", caption: "", camera: "Leica Q2" },
-      { src: "img/london-2.jpg", caption: "", camera: "Leica Q2" },
-      { src: "img/london-3.jpg", caption: "", camera: "" },
-      { src: "img/london-4.jpg", caption: "", camera: "Leica Q2" },
-      { src: "img/london-5.jpg", caption: "", camera: "Leica Q2" },
-      { src: "img/london-6.jpg", caption: "", camera: "iPhone" },
-      { src: "img/london-7.jpg", caption: "", camera: "iPhone" },
-      { src: "img/london-8.jpg", caption: "", camera: "Leica Q2" },
-      { src: "img/london-9.jpg", caption: "", camera: "iPhone" }
+      { src: "img/london-1.jpg", w: 2000, h: 1337, caption: "", camera: "Leica Q2" },
+      { src: "img/london-2.jpg", w: 2000, h: 1249, caption: "", camera: "Leica Q2" },
+      { src: "img/london-3.jpg", w: 2000, h: 1500, caption: "", camera: "" },
+      { src: "img/london-4.jpg", w: 2000, h: 1090, caption: "", camera: "Leica Q2" },
+      { src: "img/london-5.jpg", w: 1335, h: 2000, caption: "", camera: "Leica Q2" },
+      { src: "img/london-6.jpg", w: 1500, h: 2000, caption: "", camera: "iPhone" },
+      { src: "img/london-7.jpg", w: 1351, h: 2000, caption: "", camera: "iPhone" },
+      { src: "img/london-8.jpg", w: 2000, h: 1338, caption: "", camera: "Leica Q2" },
+      { src: "img/london-9.jpg", w: 2000, h: 1500, caption: "", camera: "iPhone" }
     ]
   },
   {
     id: "paris-2025", title: "Paris", year: "2025", intro: "",
     cover: "img/paris-1.jpg",
     photos: [
-      { src: "img/paris-1.jpg", caption: "", camera: "Leica Q2" },
-      { src: "img/paris-2.jpg", caption: "", camera: "Leica Q2" },
-      { src: "img/paris-3.jpg", caption: "", camera: "iPhone" }
+      { src: "img/paris-1.jpg", w: 1512, h: 2000, caption: "", camera: "Leica Q2" },
+      { src: "img/paris-2.jpg", w: 1650, h: 2000, caption: "", camera: "Leica Q2" },
+      { src: "img/paris-3.jpg", w: 1453, h: 2000, caption: "", camera: "iPhone" }
     ]
   },
   {
     id: "seoul-2025", title: "Seoul", year: "2025", intro: "",
     cover: "img/seoul-1.jpg",
     photos: [
-      { src: "img/seoul-1.jpg", caption: "", camera: "iPhone" },
-      { src: "img/seoul-2.jpg", caption: "", camera: "iPhone" },
-      { src: "img/seoul-3.jpg", caption: "", camera: "iPhone" },
-      { src: "img/seoul-4.jpg", caption: "", camera: "" }
+      { src: "img/seoul-1.jpg", w: 1160, h: 2000, caption: "", camera: "iPhone" },
+      { src: "img/seoul-2.jpg", w: 1489, h: 2000, caption: "", camera: "iPhone" },
+      { src: "img/seoul-3.jpg", w: 1500, h: 2000, caption: "", camera: "iPhone" },
+      { src: "img/seoul-4.jpg", w: 1465, h: 2000, caption: "", camera: "" }
     ]
   },
   {
     id: "shanghai-2025", title: "Shanghai", year: "2025", intro: "",
     cover: "img/shanghai-1.jpg",
     photos: [
-      { src: "img/shanghai-1.jpg", caption: "", camera: "Leica Q2" },
-      { src: "img/shanghai-2.jpg", caption: "", camera: "Leica Q2" }
+      { src: "img/shanghai-1.jpg", w: 1335, h: 2000, caption: "", camera: "Leica Q2" },
+      { src: "img/shanghai-2.jpg", w: 830, h: 1331, caption: "", camera: "Leica Q2" }
     ]
   },
   {
     id: "singapore-2025", title: "Singapore", year: "2025", intro: "",
     cover: "img/singapore-1.jpg",
     photos: [
-      { src: "img/singapore-1.jpg", caption: "", camera: "Leica Q2" }
+      { src: "img/singapore-1.jpg", w: 1796, h: 1200, caption: "", camera: "Leica Q2" }
     ]
   },
   {
     id: "tokyo-2026", title: "Tokyo", year: "2026", intro: "",
     cover: "img/tokyo-1.jpg",
     photos: [
-      { src: "img/tokyo-1.jpg", caption: "", camera: "iPhone" },
-      { src: "img/tokyo-2.jpg", caption: "", camera: "iPhone" }
+      { src: "img/tokyo-1.jpg", w: 2000, h: 1317, caption: "", camera: "iPhone" },
+      { src: "img/tokyo-2.jpg", w: 1500, h: 2000, caption: "", camera: "iPhone" }
     ]
   }
 ];
+/* Add a new series at the end of the list: the site shows the newest first. */
+SERIES.reverse();
 /* ============================================================ */
 
 const $ = s => document.querySelector(s);
@@ -269,6 +299,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":
 const ALL = []; SERIES.forEach(s=>s.photos.forEach((p,i)=>ALL.push({s,p,i})));
 let cleanup = () => {};
 const LANDSCAPE = matchMedia("(orientation:landscape) and (max-height:520px)");
+const thumb = src => src.replace("img/","img/t/");
 const label = s => esc(s.title) + (s.year ? ", " + esc(s.year) : "");
 
 function setNav(on, fade){
@@ -311,17 +342,22 @@ function renderSeriesList(){
   setNav("series");
   app.innerHTML = `
     <section class="slist" aria-label="Series">
-      ${SERIES.map((s,i)=>`<a class="srow" href="#${s.id}" data-i="${i}"><span class="t">${esc(s.title)}</span><span class="y">${esc(s.year)}</span></a>`).join("")}
+      ${SERIES.map((s,i)=>`<a class="srow" href="#${s.id}" data-i="${i}"><span class="t">${esc(s.title)}</span>
+        <span class="m"><span class="n">${s.photos.length} ${s.photos.length===1?"photograph":"photographs"}</span><span class="y">${esc(s.year)}</span></span></a>`).join("")}
     </section>
-    <div class="peek" aria-hidden="true">${SERIES.map(s=>`<img src="${s.cover}" alt="">`).join("")}</div>`;
-  const peeks = [...app.querySelectorAll(".peek img")];
+    <div class="peek" aria-hidden="true">${SERIES.map(s=>`<img src="${thumb(s.cover)}" alt="">`).join("")}</div>`;
+  const peek = app.querySelector(".peek"), peeks = [...peek.querySelectorAll("img")];
   const show = i => peeks.forEach((im,k)=>im.classList.toggle("on",k===i));
+  let tx = innerWidth*.6, ty = innerHeight*.5, x = tx, y = ty, raf = 0;
+  const tick = () => { x += (tx-x)*.12; y += (ty-y)*.12; peek.style.transform = `translate(${x}px,${y}px)`; raf = requestAnimationFrame(tick); };
+  const onMove = e => { const w = peek.offsetWidth; tx = Math.min(e.clientX+56, innerWidth-w-24); ty = Math.max(innerHeight*.3, Math.min(e.clientY, innerHeight*.7)); };
+  if (matchMedia("(hover:hover)").matches){ addEventListener("mousemove",onMove); raf = requestAnimationFrame(tick); }
   app.querySelectorAll(".srow").forEach(r=>{
     r.addEventListener("mouseenter",()=>show(+r.dataset.i));
     r.addEventListener("focus",()=>show(+r.dataset.i));
     r.addEventListener("mouseleave",()=>show(-1));
   });
-  cleanup = () => {};
+  cleanup = () => { removeEventListener("mousemove",onMove); cancelAnimationFrame(raf); };
 }
 
 /* ---------- all photographs ---------- */
@@ -330,7 +366,7 @@ function renderAll(){
   app.innerHTML = `<section class="wall" aria-label="All photographs">
     ${ALL.map((x,k)=>`
       <a class="tile" href="#${x.s.id}-${x.i+1}">
-        <span class="cell"><img src="${x.p.src}" alt="${esc(x.p.caption || x.s.title)}" loading="${k<8?'eager':'lazy'}"></span>
+        <span class="cell"><img src="${thumb(x.p.src)}" width="${x.p.w}" height="${x.p.h}" alt="${esc(x.p.caption || x.s.title)}" loading="${k<8?'eager':'lazy'}"></span>
         <span class="tc"><span>${label(x.s)}</span><span>${String(k+1).padStart(2,"0")}</span></span>
       </a>`).join("")}
   </section>`;
@@ -350,13 +386,14 @@ function renderSeries(s, startAt){
     <div class="reel" id="reel" tabindex="-1">
       <section class="frame title" data-k="0">
         <h1>${esc(s.title)}</h1>
-        ${s.year ? `<div class="yr">${esc(s.year)}</div>` : ""}
+        <div class="yr">${s.year ? esc(s.year) + ", " : ""}${s.photos.length} ${s.photos.length===1?"photograph":"photographs"}</div>
         ${s.intro ? `<p class="intro">${esc(s.intro)}</p>` : ""}
+        <div class="strip">${s.photos.map((p,i)=>`<button data-go="${i+1}" aria-label="Photograph ${i+1}"><img src="${thumb(p.src)}" alt=""></button>`).join("")}</div>
       </section>
       ${s.photos.map((p,i)=>`
       <section class="frame" data-k="${i+1}">
         <figure class="plate">
-          <img src="${p.src}" alt="${esc(p.caption || s.title + ' ' + (i+1))}" ${i<2?'':'loading="lazy"'}>
+          <img src="${p.src}" width="${p.w}" height="${p.h}" alt="${esc(p.caption || s.title + ' ' + (i+1))}" ${i<2?'':'loading="lazy"'}>
           <figcaption>
             <div class="cap">${esc(p.caption)}</div>
             <div class="meta">${label(s)}${p.camera?`<br>${esc(p.camera)}`:""}</div>
@@ -364,7 +401,7 @@ function renderSeries(s, startAt){
         </figure>
       </section>`).join("")}
       <section class="frame end" data-k="end">
-        ${SERIES.length>1 ? `<span class="lbl">Next</span><a class="next" href="#${next.id}">${esc(next.title)}</a>` : `<a class="next" href="#series">Series</a>`}
+        ${SERIES.length>1 ? `<span class="lbl">Next</span><a class="next" href="#${next.id}"><img src="${thumb(next.cover)}" alt=""><span>${esc(next.title)}</span></a>` : `<a class="next" href="#series">Series</a>`}
       </section>
     </div>`;
 
@@ -376,6 +413,7 @@ function renderSeries(s, startAt){
   });
   const n = s.photos.length;
   const io = new IntersectionObserver(es=>es.forEach(e=>{
+    e.target.classList.toggle("in", e.isIntersecting);
     if(!e.isIntersecting) return;
     const k = e.target.dataset.k;
     const onPhoto = !(k==="0" || k==="end");
@@ -383,7 +421,8 @@ function renderSeries(s, startAt){
     document.body.classList.remove("showbar");
     if (!onPhoto){ count.hidden = true; document.body.classList.remove("quiet"); }
     else { count.hidden = false; count.textContent = `${k} / ${n}`; }
-  }),{root:reel,threshold:.6});
+  }),{root:reel,threshold:.5});
+  reel.querySelectorAll(".strip button").forEach(b=>b.addEventListener("click",()=>frames[+b.dataset.go].scrollIntoView({behavior:"smooth"})));
   frames.forEach(f=>io.observe(f));
 
   const cur = () => Math.round(reel.scrollTop / reel.clientHeight);
@@ -402,7 +441,8 @@ function renderSeries(s, startAt){
 
 /* ---------- about ---------- */
 $("#about-text").textContent = SITE.about;
-$("#about-sig").textContent = SITE.signature;
+{ const ys = SERIES.map(s=>+s.year).filter(Boolean);
+  $("#about-sig").innerHTML = `${esc(SITE.signature)}<br>${ALL.length} photographs in ${SERIES.length} series, ${Math.min(...ys)} to ${Math.max(...ys)}`; }
 function openAbout(){ $("#about").classList.add("open"); $("#about-x").focus(); }
 function closeAbout(){ $("#about").classList.remove("open"); }
 $("#about-open").onclick = openAbout;
@@ -422,6 +462,7 @@ function route(){
   else renderHome();
   if (h==="about") openAbout();
   window.scrollTo(0,0);
+  app.classList.remove("enter"); void app.offsetWidth; app.classList.add("enter");
 }
 window.addEventListener("hashchange",route);
 route();
