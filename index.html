@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Don — Photographs</title>
-<meta name="description" content="Photographs by Don. Places and years, kept one series at a time.">
+<title>Photographs</title>
+<meta name="description" content="Photographs of places and years, kept one series at a time.">
 <meta name="theme-color" content="#000000">
-<meta property="og:title" content="Don — Photographs">
+<meta property="og:title" content="Photographs">
 <meta property="og:description" content="Places and years, kept one series at a time.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://keptbydon.github.io/darkslide/img/london-1.jpg">
@@ -41,7 +41,9 @@
   .bar{position:fixed;inset:0 0 auto 0;z-index:30;display:flex;justify-content:space-between;align-items:center;
        padding:24px clamp(20px,3.2vw,44px);font-size:13px;font-weight:300;letter-spacing:.06em;transition:opacity .5s var(--ease)}
   .bar.fade{background:linear-gradient(to bottom,rgba(0,0,0,.85),rgba(0,0,0,0))}
-  .bar .name{font-family:var(--display);font-size:20px;letter-spacing:.04em}
+  .bar .name{display:block;padding:4px 0;opacity:.9;transition:opacity .25s}
+  .bar .name:hover{opacity:1}
+  .bar .name svg{display:block}
   .bar nav{display:flex;gap:26px}
   .bar nav a,.bar nav button{color:var(--dim);transition:color .25s}
   .bar nav a:hover,.bar nav button:hover,.bar nav .on{color:var(--white)}
@@ -175,7 +177,7 @@
 <body>
 
 <header class="bar" id="bar">
-  <a class="name" href="#">Don</a>
+  <a class="name" href="#" aria-label="Home"><svg viewBox="0 0 26 18" width="26" height="18" aria-hidden="true"><rect x=".6" y=".6" width="24.8" height="16.8" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></a>
   <nav aria-label="Main">
     <a href="#series" data-nav="series">Series</a>
     <a href="#all" data-nav="all">All</a>
@@ -197,9 +199,8 @@
    intro:   시리즈 첫 화면의 소개글 (선택)
    ============================================================ */
 const SITE = {
-  name: "Don",
-  about: "Pictures I have kept from the places I passed through. Each series is one place in one year, and the archive keeps growing.",
-  signature: "Don, Seoul"
+  about: "I photograph from a little distance. People waiting, reading, sitting by the water, not knowing they are part of a picture. These are the ones I kept.",
+  signature: "Seoul"
 };
 
 const SERIES = [
